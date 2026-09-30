@@ -1,0 +1,20 @@
+--- a/msi_perkeyrgb/hidapi_wrapping.py
++++ b/msi_perkeyrgb/hidapi_wrapping.py
+@@ -5,7 +5,7 @@
+ import re
+ from .hidapi_types import set_hidapi_types
+ 
+-DELAY = 0.01
++DELAY = 0.1
+ 
+ 
+ class HIDLibraryError(Exception):
+@@ -52,7 +52,7 @@
+         if s.find(id_str) == -1:
+             raise HIDNotFoundError
+ 
+-        self._device = self._hidapi.hid_open(vid, pid, ct.c_wchar_p(0))
++        self._device = self._hidapi.hid_open_path(__import__("os").environ["GP76_HIDRAW"].encode())
+ 
+         if self._device is None:
+             raise HIDOpenError

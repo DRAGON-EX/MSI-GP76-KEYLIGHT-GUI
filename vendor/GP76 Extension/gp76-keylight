@@ -1,0 +1,192 @@
+#!/usr/bin/env bash
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright (C) 2026 DRAGON-EX
+set -Eeuo pipefail
+
+usage() {
+  cat <<'USAGE'
+Usage:
+  sudo ./gp76-keylight color COLOR [TARGET]
+  sudo ./gp76-keylight preset NAME
+  sudo ./gp76-keylight config FILE
+
+Examples:
+  sudo ./gp76-keylight color red
+  sudo ./gp76-keylight color red numpad
+  sudo ./gp76-keylight color '#0080ff' win
+  sudo ./gp76-keylight preset rainbow-split
+  sudo ./gp76-keylight config /path/to/my-colors.conf
+
+COLOR: red, green, blue, white, yellow, cyan, magenta, orange,
+       purple, black, off, or a six-digit RGB value such as ff0000.
+TARGET: all (default), numpad, win, space, fn, arrows, f_row,
+        num_row, characters, or a numeric GE75 configuration key.
+USAGE
+}
+
+die() {
+  printf 'Error: %s\n' "$*" >&2
+  exit 2
+}
+
+if (( $# == 0 )); then
+  usage
+  exit 2
+fi
+
+case "$1" in
+  help|-h|--help)
+    usage
+    exit 0
+    ;;
+  color)
+    shift
+    (( $# >= 1 && $# <= 2 )) || die "Use: color COLOR [TARGET]"
+    requested_color=$(printf '%s' "$1" | tr '[:upper:]' '[:lower:]')
+    target=all
+    if (( $# == 2 )); then
+      target=$(printf '%s' "$2" | tr '[:upper:]' '[:lower:]')
+    fi
+
+    case "$requested_color" in
+      red) hex=ff0000 ;;
+      green) hex=00ff00 ;;
+      blue) hex=0000ff ;;
+      white) hex=ffffff ;;
+      yellow) hex=ffff00 ;;
+      cyan) hex=00ffff ;;
+      magenta) hex=ff00ff ;;
+      orange) hex=ff8000 ;;
+      purple) hex=8000ff ;;
+      black|off) hex=000000 ;;
+      *)
+        hex=$(printf '%s' "$requested_color" | sed 's/^#//')
+        [[ "$hex" =~ ^[0-9a-f]{6}$ ]] || die "COLOR must be a known name or six-digit RGB value."
+        ;;
+    esac
+
+    case "$target" in
+      all|numpad|fn|arrows|f_row|num_row|characters)
+        key=$target
+        ;;
+      win|windows|left-win)
+        key=133
+        ;;
+      space|spacebar)
+        key=65
+        ;;
+      *)
+        [[ "$target" =~ ^[0-9]+$ ]] || die "Unknown TARGET: $target"
+        key=$target
+        ;;
+    esac
+    mode=color
+    ;;
+  preset)
+    shift
+    (( $# == 1 )) || die "Use: preset NAME"
+    preset=$1
+    case "$preset" in
+      aqua|chakra|default|disco|drain|freeway|rainbow-split|roulette)
+        ;;
+      *)
+        die "Unknown GE75 preset: $preset"
+        ;;
+    esac
+    mode=preset
+    ;;
+  config)
+    shift
+    (( $# == 1 )) || die "Use: config FILE"
+    config_file=$1
+    [[ -f "$config_file" && -r "$config_file" ]] || die "Configuration file is missing or unreadable."
+    mode=config
+    ;;
+  *)
+    die "Unknown command: $1. Use --help to see commands."
+    ;;
+esac
+
+(( EUID == 0 )) || die "Run this command with sudo."
+
+for program in python3 udevadm readlink flock lsusb ldconfig; do
+  command -v "$program" >/dev/null || die "Required command not found: $program"
+done
+
+script_dir=$(cd "$(dirname "$0")" && pwd -P)
+[[ -f "$script_dir/msi_perkeyrgb/main.py" ]] || die "Local GP76 Python package is missing."
+cd "$script_dir"
+
+if [[ "$mode" == config ]]; then
+  python3 - "$config_file" <<'PY' || die "Invalid color configuration."
+import sys
+from msi_perkeyrgb.config import load_config
+from msi_perkeyrgb.msi_keyboard import MSI_Keyboard
+
+colors, _ = load_config(sys.argv[1], MSI_Keyboard.get_model_keymap("GE75"))
+if not colors:
+    raise SystemExit("Configuration contains no keys")
+PY
+fi
+
+exec 9>/run/gp76-keylight.lock
+flock -n 9 || die "Another GP76 lighting command is still running."
+
+dev=""
+for candidate in /sys/bus/usb/devices/*; do
+  [[ -f "$candidate/idVendor" && -f "$candidate/idProduct" ]] || continue
+  if [[ "$(<"$candidate/idVendor")" == 1038 &&
+        "$(<"$candidate/idProduct")" == 113a ]]; then
+    dev=$candidate
+    break
+  fi
+done
+[[ -n "$dev" ]] || die "SteelSeries KLC controller (1038:113a) not found."
+
+port=$(basename "$dev")
+bound_by_this=0
+
+cleanup() {
+  status=$?
+  trap - EXIT
+  if (( bound_by_this )) && [[ -L "$dev/driver" ]]; then
+    if ! printf '%s' "$port" > /sys/bus/usb/drivers/usb/unbind; then
+      printf 'Warning: could not release USB controller %s\n' "$port" >&2
+    fi
+  fi
+  exit "$status"
+}
+trap cleanup EXIT
+
+if [[ ! -L "$dev/driver" ]]; then
+  printf '%s' "$port" > /sys/bus/usb/drivers/usb/bind
+  bound_by_this=1
+fi
+
+udevadm settle --timeout=15
+sleep 2
+
+raw=""
+for candidate in /sys/class/hidraw/*; do
+  [[ -e "$candidate/device" ]] || continue
+  path=$(readlink -f "$candidate/device")
+  if [[ "$path" == *"/$port:1.0/"* ]]; then
+    raw="/dev/$(basename "$candidate")"
+    break
+  fi
+done
+[[ -n "$raw" ]] || die "RGB HID interface not found."
+
+if [[ "$mode" == color ]]; then
+  printf 'Setting %s to #%s\n' "$target" "$hex"
+  GP76_HIDRAW="$raw" python3 -m msi_perkeyrgb.main \
+    -m GE75 --id 1038:113a -c - <<< "$key steady $hex"
+elif [[ "$mode" == preset ]]; then
+  printf 'Applying preset %s\n' "$preset"
+  GP76_HIDRAW="$raw" python3 -m msi_perkeyrgb.main \
+    -m GE75 --id 1038:113a -p "$preset"
+else
+  printf 'Applying custom key colors\n'
+  GP76_HIDRAW="$raw" python3 -m msi_perkeyrgb.main \
+    -m GE75 --id 1038:113a -c "$config_file"
+fi

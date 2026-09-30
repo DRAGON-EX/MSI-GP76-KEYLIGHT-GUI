@@ -1,0 +1,67 @@
+{
+  "name": "msi-gp76-keylight-gui",
+  "productName": "MSI-GP76-KEYLIGHT",
+  "desktopName": "com.dragonex.msi-gp76-keylight.desktop",
+  "version": "0.1.0",
+  "description": "MSI GP76 per-key keyboard lighting editor",
+  "author": "DRAGON-EX",
+  "copyright": "Copyright (C) 2026 DRAGON-EX",
+  "license": "GPL-3.0-only",
+  "private": true,
+  "type": "module",
+  "main": "electron-main.cjs",
+  "scripts": {
+    "app": "electron .",
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build",
+    "build:appimage": "npm run build && electron-builder --linux AppImage --x64",
+    "preview": "vite preview --host 127.0.0.1"
+  },
+  "build": {
+    "appId": "com.dragonex.msi-gp76-keylight",
+    "asar": true,
+    "asarUnpack": ["server.py", "startup_service.py", "dist/**/*", "vendor/**/*"],
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "src/**/*",
+      "public/**/*",
+      "index.html",
+      "vite.config.js",
+      "start-gui.sh",
+      "package-lock.json",
+      "electron-main.cjs",
+      "electron-preload.cjs",
+      "server.py",
+      "startup_service.py",
+      "vendor/**/*",
+      "icon.png",
+      "icon.svg",
+      "LICENSE",
+      "THIRD_PARTY_LICENSES/**/*",
+      "README.md"
+    ],
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "icon": "icon.png",
+      "category": "Utility",
+      "syncDesktopName": true,
+      "executableName": "msi-gp76-keylight"
+    },
+    "artifactName": "MSI-GP76-KEYLIGHT-${version}-${arch}.${ext}"
+  },
+  "dependencies": {
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^5.0.4",
+    "electron": "^44.5.0",
+    "electron-builder": "^26.15.3",
+    "vite": "^7.1.7"
+  }
+}

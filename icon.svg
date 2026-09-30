@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!-- Copyright (C) 2026 DRAGON-EX -->
+  <rect width="64" height="64" rx="14" fill="#17181d"/>
+  <rect x="7" y="9" width="50" height="46" rx="10" fill="#7258a6"/>
+  <path d="M17 44V20h7l8 12 8-12h7v24h-7V30l-8 11-8-11v14z" fill="#fff"/>
+</svg>

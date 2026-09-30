@@ -1,0 +1,11 @@
+[Desktop Entry]
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright (C) 2026 DRAGON-EX
+Type=Application
+Name=MSI-GP76-KEYLIGHT
+Comment=GP76 keyboard lighting editor
+Exec="/home/drakethedragon/Documents/ChatGPT/MSI KEY LIGHT GUI/start-gui.sh"
+Path=/home/drakethedragon/Documents/ChatGPT/MSI KEY LIGHT GUI
+Icon=/home/drakethedragon/Documents/ChatGPT/MSI KEY LIGHT GUI/icon.png
+Terminal=false
+Categories=Utility;
