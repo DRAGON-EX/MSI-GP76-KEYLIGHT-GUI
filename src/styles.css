@@ -54,7 +54,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline-color:#c84
 .settings-dialog{width:min(440px,calc(100vw - 36px));max-height:calc(100vh - 24px);overflow:auto}
 .settings-about{border-top:1px solid #434348;margin-top:18px;padding-top:16px}
 .settings-about h3{font:500 22px Impact,'Arial Narrow',sans-serif;letter-spacing:.03em;margin:0 0 10px}
-.settings-about .about-license,.settings-about .about-upstream{font-size:12px;line-height:1.5;margin:0 0 13px;color:#c9c9ce}
+.settings-about .about-description,.settings-about .about-license,.settings-about .about-upstream{font-size:12px;line-height:1.5;margin:0 0 13px;color:#c9c9ce}
 .settings-about .no-warranty{margin:0 0 14px;padding:10px 12px;border-left:3px solid #ad343b;background:#2a2022;color:#f7e7e8;font-size:12px;letter-spacing:.025em}
 .about-upstream a{color:#e1a5a7;text-decoration:underline}
 .profile-links{display:flex;gap:8px;flex-wrap:wrap;margin-top:19px}

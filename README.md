@@ -28,8 +28,8 @@ To produce a portable Linux AppImage:
 ```bash
 npm ci
 npm run build:appimage
-chmod +x release/MSI-GP76-KEYLIGHT-0.1.0-x86_64.AppImage
-./release/MSI-GP76-KEYLIGHT-0.1.0-x86_64.AppImage
+chmod +x release/MSI-GP76-KEYLIGHT-1.0.0-x86_64.AppImage
+./release/MSI-GP76-KEYLIGHT-1.0.0-x86_64.AppImage
 ```
 
 The AppImage bundles Electron, the React interface, and the GP76 controller code; it still uses the host hardware tools and library listed above. On first launch it can add an application-menu entry. Controller effects stay read-only; custom presets are saved in the user's app data directory. Applying colors requires an explicit action and authorization through `pkexec`. The controller can become unresponsive after poorly timed updates, so read the startup warning before sending commands.

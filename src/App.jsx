@@ -310,6 +310,7 @@ export default function App() {
         <div className="settings-device">MSI GP76 Leopard<br /><small>{data.controllerPresent ? `${controllerName} · USB ${data.controllerUsbId}` : 'No compatible controller detected'}<br />GE75 protocol</small></div>
         <section className="settings-about" aria-labelledby="about-title">
           <h3 id="about-title">About MSI-GP76-KEYLIGHT</h3>
+          <p className="about-description">A compact Linux app for your MSI GP76 keyboard lighting. Preview controller effects, create your own colorful presets, and make your keyboard feel like yours. 🐉</p>
           <p className="about-license">This app is licensed under the GNU GPL v3. Distributed modified versions must make their corresponding source code available.</p>
           <p className="about-copyright">Copyright © 2026 <ExternalLink id="github" url="https://github.com/DRAGON-EX">DRAGON-EX</ExternalLink>.</p>
           <p className="no-warranty"><strong>THIS SOFTWARE COMES WITH NO WARRANTY.</strong></p>

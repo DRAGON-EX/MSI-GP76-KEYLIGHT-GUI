@@ -2,7 +2,7 @@
   "name": "msi-gp76-keylight-gui",
   "productName": "MSI-GP76-KEYLIGHT",
   "desktopName": "com.dragonex.msi-gp76-keylight.desktop",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "MSI GP76 per-key keyboard lighting editor",
   "author": "DRAGON-EX",
   "copyright": "Copyright (C) 2026 DRAGON-EX",
@@ -20,7 +20,12 @@
   "build": {
     "appId": "com.dragonex.msi-gp76-keylight",
     "asar": true,
-    "asarUnpack": ["server.py", "startup_service.py", "dist/**/*", "vendor/**/*"],
+    "asarUnpack": [
+      "server.py",
+      "startup_service.py",
+      "dist/**/*",
+      "vendor/**/*"
+    ],
     "directories": {
       "output": "release"
     },
