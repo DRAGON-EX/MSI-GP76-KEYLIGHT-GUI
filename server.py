@@ -20,15 +20,7 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parent
-if os.environ.get("GP76_EXTENSION_DIR"):
-    EXTENSION = Path(os.environ["GP76_EXTENSION_DIR"])
-else:
-    candidates = [
-        ROOT / "vendor/GP76 Extension",
-        ROOT.parent / "GP76 Extension",
-        Path.home() / "Desktop/MSI-GP76-KEYLIGHT/GP76 Extension",
-    ]
-    EXTENSION = next((path for path in candidates if (path / "msi_perkeyrgb/protocol_data/msi_keymaps.py").is_file()), candidates[0])
+EXTENSION = Path(os.environ.get("GP76_EXTENSION_DIR") or ROOT / "vendor/GP76 Extension").resolve()
 RUNTIME_DIR = None
 if os.environ.get("GP76_STAGE_EXTENSION") == "1":
     RUNTIME_DIR = tempfile.TemporaryDirectory(prefix="gp76-keylight-")

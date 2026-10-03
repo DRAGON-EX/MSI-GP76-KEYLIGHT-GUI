@@ -41,8 +41,10 @@ async function saveIntegrationChoice(choice) {
 }
 
 function desktopQuoted(value) {
-  if (/[\r\n]/.test(value)) throw new Error('Invalid AppImage path.')
-  return `"${value.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\$/g, '\\$').replace(/`/g, '\\`')}"`
+  if (/[\x00-\x1f=]/.test(value)) throw new Error('Invalid AppImage path.')
+  // Exec quoting is decoded after desktop-entry string escaping.
+  const quoted = value.replace(/[\\"$`]/g, character => '\\' + character)
+  return `"${quoted.replace(/\\/g, '\\\\').replace(/%/g, '%%')}"`
 }
 
 async function installLauncher() {
@@ -55,7 +57,8 @@ async function installLauncher() {
   await fs.mkdir(applications, { recursive: true })
   await fs.mkdir(icons, { recursive: true })
   await fs.writeFile(path.join(icons, 'msi-gp76-keylight.png'), image.toPNG())
-  const entry = `[Desktop Entry]\n# SPDX-License-Identifier: GPL-3.0-only\n# Copyright (C) 2026 DRAGON-EX\nType=Application\nName=MSI-GP76-KEYLIGHT\nComment=GP76 keyboard lighting editor\nExec=${desktopQuoted(executable)} --no-sandbox\nIcon=msi-gp76-keylight\nTerminal=false\nCategories=Utility;\nStartupWMClass=com.dragonex.msi-gp76-keylight\n`
+  // Keep field-code escaping out of the executable lookup performed by launchers.
+  const entry = `[Desktop Entry]\n# SPDX-License-Identifier: GPL-3.0-only\n# Copyright (C) 2026 DRAGON-EX\nType=Application\nName=MSI-GP76-KEYLIGHT\nComment=GP76 keyboard lighting editor\nExec=env -- ${desktopQuoted(executable)} --no-sandbox\nIcon=msi-gp76-keylight\nTerminal=false\nCategories=Utility;\nStartupWMClass=com.dragonex.msi-gp76-keylight\n`
   await fs.writeFile(path.join(applications, 'msi-gp76-keylight.desktop'), entry, { mode: 0o644 })
 }
 

@@ -1,5 +1,9 @@
 node_modules/
 data/
 __pycache__/
+*.py[cod]
+.env
+.env.*
+!.env.example
 dist/
 release/
